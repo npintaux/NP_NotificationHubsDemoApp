@@ -14,6 +14,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.Networking.PushNotifications;
+using Microsoft.WindowsAzure.Messaging;
+using Windows.UI.Popups;
 
 namespace NP_NotificationHubsDemoApp
 {
@@ -101,6 +104,26 @@ namespace NP_NotificationHubsDemoApp
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Save application state and stop any background activity
             deferral.Complete();
+        }
+
+        /// <summary>
+        /// Retrieves the channel URI for the app from WNS, and then registers that channel URI with your notification hub.
+        /// </summary>
+        private async void InitNotificationsAsync()
+        {
+            var channel = await PushNotificationChannelManager.CreatePushNotificationChannelForApplicationAsync();
+
+            var hub = new NotificationHub("< your hub name>", "<Your DefaultListenSharedAccessSignature connection string>");
+            var result = await hub.RegisterNativeAsync(channel.Uri);
+
+            // Displays the registration ID so you know it was successful
+            if (result.RegistrationId != null)
+            {
+                var dialog = new MessageDialog("Registration successful: " + result.RegistrationId);
+                dialog.Commands.Add(new UICommand("OK"));
+                await dialog.ShowAsync();
+            }
+
         }
     }
 }
